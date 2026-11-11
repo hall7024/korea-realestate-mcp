@@ -20,9 +20,10 @@ const ym = z
   .regex(/^\d{6}$/)
   .optional();
 
-type ToolResult = { content: { type: "text"; text: string }[]; structuredContent?: Record<string, unknown>; isError?: boolean };
+type ToolResult = { content: { type: "text"; text: string }[]; isError?: boolean };
 
-const ok = (text: string, data: unknown): ToolResult => ({ content: [{ type: "text", text }], structuredContent: JSON.parse(JSON.stringify(data)) as Record<string, unknown> });
+// structuredContent는 outputSchema 계약 없이 보내면 토큰만 늘어 v0.1에서는 텍스트만 돌려준다 (라이브러리 API가 객체를 준다)
+const ok = (text: string): ToolResult => ({ content: [{ type: "text", text }] });
 
 async function guard(tool: string, run: () => Promise<ToolResult>): Promise<ToolResult> {
   try {
@@ -40,13 +41,14 @@ export function registerTools(server: McpServer, client: Client, now: () => Date
     "resolve_region",
     {
       title: "지역 해석",
-      description: "지역 이름을 실거래가 조회용 시군구 코드와 법정동으로 바꿉니다. 이름이 겹치면 후보를 모두 돌려줍니다. 2026-07 행정구역 개편 전 이름도 받습니다.",
+      description:
+        "지역 이름을 실거래가 조회용 시군구 코드와 법정동으로 바꿉니다. 이름이 겹치면 후보를 모두 돌려줍니다. 다른 도구의 region에는 결과의 'region에 넣을 값'을 그대로 쓰세요. 2026-07 행정구역 개편 전 이름도 받습니다.",
       inputSchema: { query: region },
       annotations,
     },
     async ({ query }) => guard("resolve_region", async () => {
       const r = resolveRegion(query);
-      return ok(renderRegion(query, r), r);
+      return ok(renderRegion(query, r));
     }),
   );
 
@@ -61,8 +63,8 @@ export function registerTools(server: McpServer, client: Client, now: () => Date
         dealType: z.enum(["sale", "rent"]).describe("sale 매매, rent 전월세 (apt·rh·sh·offi만)"),
         region,
         months: months(3),
-        from: ym.describe("시작 계약년월 YYYYMM (months 대신)"),
-        to: ym.describe("끝 계약년월 YYYYMM"),
+        from: ym.describe("시작 계약년월 YYYYMM (months 대신, 최대 24개월)"),
+        to: ym.describe("끝 계약년월 YYYYMM (기본 이번 달)"),
         name,
         areaMin: z.number().nonnegative().optional().describe("최소 면적 ㎡"),
         areaMax: z.number().positive().optional().describe("최대 면적 ㎡"),
@@ -73,7 +75,7 @@ export function registerTools(server: McpServer, client: Client, now: () => Date
     },
     async (args) => guard("search_deals", async () => {
       const r = await searchDeals(ctx, args);
-      return r.kind === "region_candidates" ? ok(renderRegionCandidates(r), r) : ok(renderSearch(r, now()), r);
+      return r.kind === "region_candidates" ? ok(renderRegionCandidates(r)) : ok(renderSearch(r, now()));
     }),
   );
 
@@ -82,13 +84,13 @@ export function registerTools(server: McpServer, client: Client, now: () => Date
     {
       title: "매매 시세 요약",
       description:
-        "매매 실거래로 시세를 요약합니다: 중앙값, 범위, 사분위, ㎡당 가격, 월별 추이, 최근 거래. name을 주면 그 단지만, 여러 단지에 맞으면 후보를 돌려줍니다. 해제·직거래는 기본으로 뺍니다.",
+        "매매 실거래로 시세를 요약합니다: 중앙값, 범위, 사분위, ㎡당 가격, 월별 추이, 최근 거래. name·area를 주면 범위가 좁아져 정확해지고, 여러 단지에 맞으면 후보를 돌려줍니다. 해제·직거래는 기본으로 뺍니다. 구가 여러 개인 시 전체는 호출 한도를 넘을 수 있습니다.",
       inputSchema: { propertyType: analyzable, region, name, area, months: months(12), includeDirect: z.boolean().optional().describe("직거래 포함 (기본 false)") },
       annotations,
     },
     async (args) => guard("market_summary", async () => {
       const r = await summarize(ctx, args);
-      return r.kind === "region_candidates" ? ok(renderRegionCandidates(r), r) : ok(renderSummary(r, now()), r);
+      return r.kind === "region_candidates" ? ok(renderRegionCandidates(r)) : ok(renderSummary(r, now()));
     }),
   );
 
@@ -97,7 +99,7 @@ export function registerTools(server: McpServer, client: Client, now: () => Date
     {
       title: "전세가율",
       description:
-        "같은 조건의 ㎡당 매매 중앙값 대비 ㎡당 전세 보증금 중앙값(전세가율)을 계산합니다. deposit과 area를 주면 '입력 보증금 ÷ 추정 매매가'도 냅니다. 판단 없이 숫자·표본·기준만 돌려줍니다.",
+        "같은 조건의 ㎡당 매매 중앙값 대비 ㎡당 전세 보증금 중앙값(전세가율)을 계산합니다. deposit과 area를 주면 같은 면적의 추정 전세가·매매가와 입력 보증금의 비율, 비교 전세 중 위치도 냅니다. name·area를 주면 정확해집니다.",
       inputSchema: {
         propertyType: analyzable,
         region,
@@ -110,7 +112,7 @@ export function registerTools(server: McpServer, client: Client, now: () => Date
     },
     async (args) => guard("jeonse_ratio", async () => {
       const r = await ratio(ctx, args);
-      return r.kind === "region_candidates" ? ok(renderRegionCandidates(r), r) : ok(renderRatio(r, now()), r);
+      return r.kind === "region_candidates" ? ok(renderRegionCandidates(r)) : ok(renderRatio(r, now()));
     }),
   );
 }

@@ -44,6 +44,8 @@ export interface MarketSummary {
   kind: "summary";
   scope: "complex" | "area";
   complex?: Complex;
+  /** 결과에 섞인 단지·건물 수 (지역 범위일 때 이질성 신호) */
+  complexes: number;
   count: number;
   median: number;
   min: number;
@@ -75,6 +77,7 @@ export interface JeonseRatio {
   kind: "ratio";
   scope: "complex" | "area";
   complex?: Complex;
+  complexes: number;
   /** ㎡당 전세 중앙값 ÷ ㎡당 매매 중앙값 (%) */
   ratioPercent: number;
   salePerM2: number;
@@ -84,8 +87,20 @@ export interface JeonseRatio {
   saleCount: number;
   rentCount: number;
   confidence: "높음" | "보통";
-  deposit?: { amount: number; estimatedPrice: number; depositRatioPercent: number };
+  deposit?: {
+    amount: number;
+    /** ㎡당 매매 중앙값 × 면적 */
+    estimatedPrice: number;
+    depositRatioPercent: number;
+    /** ㎡당 전세 중앙값 × 면적 */
+    estimatedJeonse: number;
+    depositToJeonsePercent: number;
+    /** 비교한 전세 중 ㎡당 보증금이 입력값 이하인 비율 (%) */
+    depositPercentile: number;
+  };
   excluded: Excluded;
+  /** 전세 표본에서 뺀 계약: 월세, 갱신 */
+  rentExcluded: { monthly: number; renewal: number };
   criteria: string[];
 }
 
@@ -231,6 +246,7 @@ export function marketSummary(deals: DealView[], f: AnalysisFilter): MarketResul
     q1: Math.round(quantile(prices, 0.25)),
     q3: Math.round(quantile(prices, 0.75)),
     medianPerM2: median(nums(kept.map((d) => perM2(d.price, d.area)))),
+    complexes: groupComplexes(kept).length,
     latestDate: kept.map((d) => d.date).sort().at(-1) ?? "",
     monthly,
     recent: [...kept].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 5),
@@ -251,10 +267,19 @@ export function jeonseRatio(sales: DealView[], rents: DealView[], f: AnalysisFil
   if ("kind" in picked) return picked;
   const { deals: keptSales, excluded } = finalFilter(picked.deals, f);
   // 전세는 매매에서 고른 단지와 법정동·이름이 같은 것
-  const rentBase = baseFilter(rents.filter(isJeonse), f).filter(
-    (d) => !picked.complex || (lastWord(d.umd) === lastWord(picked.complex.umd) && squash(d.name ?? "") === squash(picked.complex.name)),
+  const sameComplex = (d: DealView) => !picked.complex || (lastWord(d.umd) === lastWord(picked.complex.umd) && squash(d.name ?? "") === squash(picked.complex.name));
+  const { deals: allRents } = finalFilter(
+    baseFilter(
+      rents.filter((d) => d.kind === "rent"),
+      f,
+    ).filter(sameComplex),
+    { ...f, includeDirect: true },
   );
-  const { deals: keptRents } = finalFilter(rentBase, { ...f, includeDirect: true });
+  const keptRents = allRents.filter(isJeonse);
+  const rentExcluded = {
+    monthly: allRents.filter((d) => (d.monthlyRent ?? 0) > 0).length,
+    renewal: allRents.filter((d) => d.monthlyRent === 0 && d.contractType === "갱신").length,
+  };
   const criteria = [...criteriaOf(f, excluded), "전세: 월세 0원, 갱신 계약 제외(계약 구분이 빈 계약은 포함)", `전세가율 = ㎡당 전세 보증금 중앙값 ÷ ㎡당 매매가 중앙값`];
 
   const saleM2 = nums(keptSales.map((d) => perM2(d.price, d.area)));
@@ -285,9 +310,20 @@ export function jeonseRatio(sales: DealView[], rents: DealView[], f: AnalysisFil
   let deposit: JeonseRatio["deposit"];
   if (f.deposit !== undefined) {
     if (f.area !== undefined) {
-      const estimatedPrice = Math.round((salePerM2 * f.area) / 10_000) * 10_000;
-      deposit = { amount: f.deposit, estimatedPrice, depositRatioPercent: Math.round((f.deposit / estimatedPrice) * 1000) / 10 };
-      criteria.push("추정 매매가 = ㎡당 매매가 중앙값 × 입력 면적");
+      const roundMan = (x: number) => Math.round(x / 10_000) * 10_000;
+      const pct1 = (x: number) => Math.round(x * 1000) / 10;
+      const estimatedPrice = roundMan(salePerM2 * f.area);
+      const estimatedJeonse = roundMan(jeonsePerM2 * f.area);
+      const inputPerM2 = f.deposit / f.area;
+      deposit = {
+        amount: f.deposit,
+        estimatedPrice,
+        depositRatioPercent: pct1(f.deposit / estimatedPrice),
+        estimatedJeonse,
+        depositToJeonsePercent: pct1(f.deposit / estimatedJeonse),
+        depositPercentile: Math.round((rentM2.filter((x) => x <= inputPerM2).length / rentM2.length) * 100),
+      };
+      criteria.push("추정 매매가·전세가 = ㎡당 중앙값 × 입력 면적");
     } else {
       criteria.push("area(전용면적)가 없어 입력 보증금 비율은 계산하지 않았습니다");
     }
@@ -297,6 +333,7 @@ export function jeonseRatio(sales: DealView[], rents: DealView[], f: AnalysisFil
     kind: "ratio",
     scope,
     ...(picked.complex ? { complex: picked.complex } : {}),
+    complexes: groupComplexes(keptSales).length,
     ratioPercent: Math.round((jeonsePerM2 / salePerM2) * 1000) / 10,
     salePerM2,
     jeonsePerM2,
@@ -307,6 +344,7 @@ export function jeonseRatio(sales: DealView[], rents: DealView[], f: AnalysisFil
     confidence: high ? "높음" : "보통",
     ...(deposit ? { deposit } : {}),
     excluded,
+    rentExcluded,
     criteria,
   };
 }

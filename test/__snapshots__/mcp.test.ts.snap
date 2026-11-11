@@ -1,0 +1,54 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`MCP 리뷰 회귀 > tools/list 설명·스키마 고정 1`] = `
+[
+  {
+    "description": "지역 이름을 실거래가 조회용 시군구 코드와 법정동으로 바꿉니다. 이름이 겹치면 후보를 모두 돌려줍니다. 다른 도구의 region에는 결과의 'region에 넣을 값'을 그대로 쓰세요. 2026-07 행정구역 개편 전 이름도 받습니다.",
+    "input": [
+      "query",
+    ],
+    "name": "resolve_region",
+  },
+  {
+    "description": "국토교통부 실거래 원자료를 최신순으로 조회합니다. 금액은 원 단위입니다. 시세·전세가율 계산이 필요하면 market_summary, jeonse_ratio를 쓰세요.",
+    "input": [
+      "propertyType",
+      "dealType",
+      "region",
+      "months",
+      "from",
+      "to",
+      "name",
+      "areaMin",
+      "areaMax",
+      "includeCancelled",
+      "limit",
+    ],
+    "name": "search_deals",
+  },
+  {
+    "description": "매매 실거래로 시세를 요약합니다: 중앙값, 범위, 사분위, ㎡당 가격, 월별 추이, 최근 거래. name·area를 주면 범위가 좁아져 정확해지고, 여러 단지에 맞으면 후보를 돌려줍니다. 해제·직거래는 기본으로 뺍니다. 구가 여러 개인 시 전체는 호출 한도를 넘을 수 있습니다.",
+    "input": [
+      "propertyType",
+      "region",
+      "name",
+      "area",
+      "months",
+      "includeDirect",
+    ],
+    "name": "market_summary",
+  },
+  {
+    "description": "같은 조건의 ㎡당 매매 중앙값 대비 ㎡당 전세 보증금 중앙값(전세가율)을 계산합니다. deposit과 area를 주면 같은 면적의 추정 전세가·매매가와 입력 보증금의 비율, 비교 전세 중 위치도 냅니다. name·area를 주면 정확해집니다.",
+    "input": [
+      "propertyType",
+      "region",
+      "name",
+      "area",
+      "deposit",
+      "months",
+    ],
+    "name": "jeonse_ratio",
+  },
+]
+`;

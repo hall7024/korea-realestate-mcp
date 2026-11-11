@@ -1,7 +1,8 @@
 import { jeonseRatio, marketSummary, type MarketResult, type RatioResult } from "./analytics.js";
 import type { Client, MonthFailure } from "./client.js";
-import { InputError } from "./errors.js";
+import { InputError, type ApiErrorKind } from "./errors.js";
 import type { DealView } from "./normalize.js";
+import { apiErrorOfKind } from "./parse.js";
 import { resolveRegion, type Region } from "./region.js";
 import { SERVICES, serviceFor, type AnalyzableType, type DealKind, type PropertyType, type ServiceId } from "./services.js";
 import { monthRange, monthsBack, todayKst } from "./time.js";
@@ -18,12 +19,51 @@ export interface RegionCandidates {
   note?: string;
 }
 
+/** 서비스 하나의 실패 요약 (사용자에게 할 일을 한 번만 알리기 위해) */
+export interface ServiceFailure {
+  service: ServiceId;
+  label: string;
+  kind: ApiErrorKind;
+  /** 실패한 (지역, 달) 수 / 요청한 수 */
+  failed: number;
+  total: number;
+  months: string[];
+  hint: string;
+}
+
 interface Fetched {
   region: Region;
   note?: string;
   months: string[];
   failures: MonthFailure[];
+  failureSummary: ServiceFailure[];
   requests: number;
+}
+
+function summarizeFailures(failures: MonthFailure[], perService: number): ServiceFailure[] {
+  const by = new Map<ServiceId, MonthFailure[]>();
+  for (const f of failures) by.set(f.service, [...(by.get(f.service) ?? []), f]);
+  return [...by.entries()].map(([service, list]) => {
+    const first = list[0];
+    const kind = first?.kind ?? "upstream";
+    return {
+      service,
+      label: SERVICES[service].label,
+      kind,
+      failed: list.length,
+      total: perService,
+      months: [...new Set(list.map((f) => f.ym))].sort(),
+      hint: apiErrorOfKind(service, kind, first?.status, first?.gatewayCode).hint,
+    };
+  });
+}
+
+/** 한 서비스가 모든 (지역, 달)에서 실패했으면 그 오류를 올린다. 일부만 실패하면 결과에 표시한다 */
+function failWhole(summary: ServiceFailure[], failures: MonthFailure[]): void {
+  const whole = summary.find((s) => s.failed === s.total);
+  if (!whole) return;
+  const first = failures.find((f) => f.service === whole.service);
+  throw apiErrorOfKind(whole.service, whole.kind, first?.status, first?.gatewayCode);
 }
 
 export interface SearchArgs {
@@ -136,6 +176,7 @@ export async function searchDeals(ctx: QueryContext, args: SearchArgs): Promise<
     deals: [...kept].sort((a, b) => b.date.localeCompare(a.date)).slice(0, limit),
     excludedCancelled: matching.length - kept.length,
     failures: fetched.failures,
+    failureSummary: summarizeFailures(fetched.failures, picked.region.lawdCodes.length * months.length),
     requests: fetched.requests,
   };
 }
@@ -170,6 +211,7 @@ export async function summarize(ctx: QueryContext, args: AnalysisArgs): Promise<
     months: [...months].sort(),
     result: marketSummary(fetched.deals, filter),
     failures: fetched.failures,
+    failureSummary: summarizeFailures(fetched.failures, picked.region.lawdCodes.length * months.length),
     requests: fetched.requests,
   };
 }
@@ -183,6 +225,9 @@ export async function ratio(ctx: QueryContext, args: RatioArgs): Promise<RatioQu
   const sale = serviceFor(args.propertyType, "sale");
   const rent = serviceFor(args.propertyType, "rent");
   const fetched = await ctx.client.fetchRange({ services: [sale, rent], lawdCodes: picked.region.lawdCodes, months });
+  const failureSummary = summarizeFailures(fetched.failures, picked.region.lawdCodes.length * months.length);
+  // 매매나 전월세 한쪽을 통째로 못 받으면 "표본 부족"이 아니라 그 서비스의 문제(대개 미신청)다
+  failWhole(failureSummary, fetched.failures);
   const sales = fetched.deals.filter((d) => d.service === sale);
   const rents = fetched.deals.filter((d) => d.service === rent);
   return {
@@ -193,6 +238,7 @@ export async function ratio(ctx: QueryContext, args: RatioArgs): Promise<RatioQu
     months: [...months].sort(),
     result: jeonseRatio(sales, rents, { ...filter, ...(args.deposit !== undefined ? { deposit: args.deposit } : {}) }),
     failures: fetched.failures,
+    failureSummary,
     requests: fetched.requests,
   };
 }

@@ -1,10 +1,9 @@
 import type { Complex, Excluded, MarketSummary } from "./analytics.js";
-import type { MonthFailure } from "./client.js";
 import { ApiError, InputError, type ApiErrorKind } from "./errors.js";
 import { pct, sourceLine, sqm, table, won, ymLabel } from "./format.js";
 import { redact } from "./key.js";
 import type { DealView } from "./normalize.js";
-import type { RatioQueryResult, RegionCandidates, SearchResult, SummaryResult } from "./query.js";
+import type { RatioQueryResult, RegionCandidates, SearchResult, ServiceFailure, SummaryResult } from "./query.js";
 import type { RegionResult } from "./region.js";
 import { PROPERTY_LABELS, SERVICES } from "./services.js";
 
@@ -30,12 +29,15 @@ const KIND_LABEL: Record<ApiErrorKind, string> = {
   upstream: "일시 오류",
 };
 
-const ZERO = "조회는 정상이며, 해당 기간·조건의 거래가 0건입니다.";
+/** 거래 0건. 일부 달이 실패했으면 "정상"이라고 하지 않는다 */
+const zero = (failed: boolean) => (failed ? "받은 달에서는 해당 조건의 거래가 0건입니다 (일부 달은 조회 실패, 아래 참고)." : "조회는 정상이며, 해당 기간·조건의 거래가 0건입니다.");
 
-function failuresLine(failures: MonthFailure[]): string[] {
-  if (!failures.length) return [];
-  const list = failures.map((f) => `${ymLabel(f.ym)}(${KIND_LABEL[f.kind]})`).join(", ");
-  return [`⚠ 일부 달 조회 실패: ${list}. 나머지 달로 계산했습니다.`];
+/** 서비스마다 한 번: 몇 건 실패했고 무엇을 하면 되는지 */
+function failuresLine(summary: ServiceFailure[]): string[] {
+  return summary.map((f) => {
+    const months = f.months.length > 6 ? `${f.months.slice(0, 6).map(ymLabel).join(", ")} 외 ${f.months.length - 6}개월` : f.months.map(ymLabel).join(", ");
+    return `⚠ ${f.label}: ${f.total}건 중 ${f.failed}건 조회 실패 (${KIND_LABEL[f.kind]}; ${months}). 나머지로 계산했습니다. 해결: ${f.hint}`;
+  });
 }
 
 function excludedLine(e: Excluded, includeDirect = false): string {
@@ -63,11 +65,18 @@ function dealRows(deals: DealView[]): string {
   );
 }
 
-function complexRows(candidates: Complex[]): string {
-  return table(
-    ["단지·건물", "법정동", "지번", "거래 수"],
-    candidates.map((c) => [c.name, c.umd, c.jibun ?? "-", c.count]),
-  );
+const MAX_CANDIDATES = 10;
+
+function complexCandidates(candidates: Complex[]): string[] {
+  const shown = candidates.slice(0, MAX_CANDIDATES);
+  return [
+    `이름에 맞는 단지가 ${candidates.length}곳입니다. 어느 단지인지 확인한 뒤 name을 단지 이름 그대로 넣거나, region에 법정동을 넣어(예: '마포구 아현동') 다시 조회하세요.`,
+    table(
+      ["단지·건물", "법정동", "지번", "거래 수"],
+      shown.map((c) => [c.name, c.umd, c.jibun ?? "-", c.count]),
+    ),
+    ...(candidates.length > shown.length ? [`외 ${candidates.length - shown.length}곳 (거래 수 순으로 ${MAX_CANDIDATES}곳만 표시)`] : []),
+  ];
 }
 
 export function renderRegion(query: string, r: RegionResult): string {
@@ -76,21 +85,21 @@ export function renderRegion(query: string, r: RegionResult): string {
   if (r.note) lines.push(`참고: ${r.note}`);
   lines.push(
     table(
-      ["지역", "법정동", "시군구 코드"],
-      r.matches.map((m) => [m.label, m.umd ?? "-", m.lawdCodes.join(", ")]),
+      ["지역", "법정동", "시군구 코드", "region에 넣을 값"],
+      r.matches.map((m) => [m.label, m.umd ?? "-", m.lawdCodes.join(", "), m.query]),
     ),
   );
-  if (r.matches.length > 1) lines.push("조회할 때는 위 지역 이름을 region에 그대로 넣거나, 시군구 코드 5자리를 넣으세요.");
+  if (r.matches.length > 1) lines.push("조회할 때는 'region에 넣을 값'을 그대로 쓰세요.");
   return lines.join("\n");
 }
 
 export function renderRegionCandidates(r: RegionCandidates): string {
   return [
-    `'${r.query}'에 맞는 지역이 ${r.candidates.length}곳입니다. 어느 곳인지 사용자에게 확인한 뒤, region에 아래 이름이나 시군구 코드를 넣어 다시 조회하세요.`,
+    `'${r.query}'에 맞는 지역이 ${r.candidates.length}곳입니다. 어느 곳인지 사용자에게 확인한 뒤, 'region에 넣을 값'을 그대로 region에 넣어 다시 조회하세요.`,
     ...(r.note ? [`참고: ${r.note}`] : []),
     table(
-      ["지역", "법정동", "시군구 코드"],
-      r.candidates.map((m) => [m.label, m.umd ?? "-", m.lawdCodes.join(", ")]),
+      ["지역", "법정동", "region에 넣을 값"],
+      r.candidates.map((m) => [m.label, m.umd ?? "-", m.query]),
     ),
   ].join("\n");
 }
@@ -103,18 +112,20 @@ export function renderSearch(r: SearchResult, now: Date): string {
   const def = SERVICES[r.service];
   const lines = header(r.region, `${def.label} 실거래 (${periodOf(r.months)})`, r.note);
   if (!r.verified) lines.push(`⚠ ${def.label}는 실제 응답으로 필드를 검증하지 않은 서비스입니다. 면적·이름 값이 비어 있을 수 있습니다.`);
-  if (r.total === 0) lines.push(ZERO);
+  if (r.total === 0) lines.push(zero(r.failures.length > 0));
   else {
     lines.push(`조건에 맞는 거래 ${r.total}건 중 최신 ${r.deals.length}건 (금액은 원 단위 환산):`);
     lines.push(dealRows(r.deals));
   }
   if (r.excludedCancelled) lines.push(`해제된 거래 ${r.excludedCancelled}건은 뺐습니다 (includeCancelled로 포함 가능).`);
-  lines.push(...failuresLine(r.failures), sourceLine(now));
+  lines.push(...failuresLine(r.failureSummary), sourceLine(now));
   return lines.join("\n");
 }
 
 function summaryBody(s: MarketSummary): string[] {
-  const target = s.complex ? `단지: ${s.complex.name} (${s.complex.umd} ${s.complex.jibun ?? ""})`.trim() : "범위: 지역 전체(법정동 지정 시 그 동)";
+  const target = s.complex
+    ? `단지: ${s.complex.name} (${s.complex.umd} ${s.complex.jibun ?? ""})`.trim()
+    : `범위: 지역 전체(법정동 지정 시 그 동), 단지·건물 ${s.complexes}곳이 섞인 값입니다. 특정 단지 시세는 name을 주세요.`;
   return [
     target,
     table(
@@ -142,13 +153,13 @@ export function renderSummary(r: SummaryResult, now: Date): string {
   const lines = header(r.region, `${PROPERTY_LABELS[r.propertyType]} 매매 시세`, r.note);
   const res = r.result;
   if (res.kind === "complex_candidates") {
-    lines.push("이름에 맞는 단지가 여러 개입니다. 어느 단지인지 확인한 뒤 name을 더 구체적으로 넣어 다시 조회하세요.", complexRows(res.candidates));
+    lines.push(...complexCandidates(res.candidates));
   } else if (res.kind === "empty") {
-    lines.push(ZERO, `기준: ${res.criteria.join(" / ")}`, excludedLine(res.excluded));
+    lines.push(zero(r.failures.length > 0), `기준: ${res.criteria.join(" / ")}`, excludedLine(res.excluded));
   } else {
     lines.push(...summaryBody(res), `기준: ${res.criteria.join(" / ")}`);
   }
-  lines.push("참고 자료이며 계약·투자 판단의 근거가 아닙니다.", ...failuresLine(r.failures), sourceLine(now));
+  lines.push("참고 자료이며 계약·투자 판단의 근거가 아닙니다.", ...failuresLine(r.failureSummary), sourceLine(now));
   return lines.join("\n");
 }
 
@@ -156,11 +167,12 @@ export function renderRatio(r: RatioQueryResult, now: Date): string {
   const lines = header(r.region, `${PROPERTY_LABELS[r.propertyType]} 전세가율`, r.note);
   const res = r.result;
   if (res.kind === "complex_candidates") {
-    lines.push("이름에 맞는 단지가 여러 개입니다. 어느 단지인지 확인한 뒤 name을 더 구체적으로 넣어 다시 조회하세요.", complexRows(res.candidates));
+    lines.push(...complexCandidates(res.candidates));
   } else if (res.kind === "insufficient") {
     lines.push(`전세가율을 계산하지 않았습니다: ${res.reason}`, `기준: ${res.criteria.join(" / ")}`);
   } else {
     if (res.complex) lines.push(`단지: ${res.complex.name} (${res.complex.umd} ${res.complex.jibun ?? ""})`.trim());
+    else lines.push(`범위: 지역 전체, 단지·건물 ${res.complexes}곳이 섞인 값입니다.`);
     const rows: (string | number)[][] = [
       ["전세가율", pct(res.ratioPercent)],
       ["㎡당 매매 중앙값 (사분위)", `${won(res.salePerM2)} (${won(res.salePerM2Iqr[0])} ~ ${won(res.salePerM2Iqr[1])})`],
@@ -169,11 +181,22 @@ export function renderRatio(r: RatioQueryResult, now: Date): string {
       ["신뢰도", res.confidence],
     ];
     if (res.deposit) {
-      rows.push(["입력 보증금", won(res.deposit.amount)], ["추정 매매가", won(res.deposit.estimatedPrice)], ["보증금 ÷ 추정 매매가", pct(res.deposit.depositRatioPercent)]);
+      rows.push(
+        ["입력 보증금", won(res.deposit.amount)],
+        ["추정 전세가 (같은 면적)", won(res.deposit.estimatedJeonse)],
+        ["보증금 ÷ 추정 전세가", pct(res.deposit.depositToJeonsePercent)],
+        ["비교 전세 중 위치", `㎡당 보증금이 입력값 이하인 계약 ${res.deposit.depositPercentile}%`],
+        ["추정 매매가 (같은 면적)", won(res.deposit.estimatedPrice)],
+        ["보증금 ÷ 추정 매매가", pct(res.deposit.depositRatioPercent)],
+      );
     }
-    lines.push(table(["항목", "값"], rows), `기준: ${res.criteria.join(" / ")}`, excludedLine(res.excluded));
+    lines.push(
+      table(["항목", "값"], rows),
+      `기준: ${res.criteria.join(" / ")}`,
+      `${excludedLine(res.excluded)} (매매) / 월세 ${res.rentExcluded.monthly}건, 갱신 ${res.rentExcluded.renewal}건 (전세 표본에서)`,
+    );
   }
-  lines.push("참고 자료이며 계약·투자 판단의 근거가 아닙니다.", ...failuresLine(r.failures), sourceLine(now));
+  lines.push("참고 자료이며 계약·투자 판단의 근거가 아닙니다.", ...failuresLine(r.failureSummary), sourceLine(now));
   return lines.join("\n");
 }
 

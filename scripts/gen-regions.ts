@@ -61,16 +61,16 @@ for (const [code, s] of Object.entries(sigungu)) {
   }
 }
 
-// 법정동: 시군구 이름 뒤 부분 ("아현동", "조치원읍 죽림리")
-const umd: Record<string, string[]> = {};
+// 법정동: [법정동코드 뒤 5자리, 시군구 이름 뒤 부분 ("아현동", "조치원읍 죽림리")]
+const umd: Record<string, [string, string][]> = {};
 for (const r of rows) {
   if (!r.exists || isSigungu(r.code) || isSido(r.code)) continue;
   const code5 = r.code.slice(0, 5);
   const parent = fullName[code5];
   if (!parent || !r.name.startsWith(`${parent} `)) continue;
-  (umd[code5] ??= []).push(r.name.slice(parent.length + 1));
+  (umd[code5] ??= []).push([r.code.slice(5), r.name.slice(parent.length + 1)]);
 }
-for (const list of Object.values(umd)) list.sort((a, b) => a.localeCompare(b, "ko"));
+for (const list of Object.values(umd)) list.sort((a, b) => a[1].localeCompare(b[1], "ko"));
 
 // 옛 이름·옛 코드 → 새 코드. 같은 (새) 시도 안에서 법정동 이름이 겹치는 현재 시군구를 잇는다
 const SIDO_RENAMED: Record<string, string> = {
@@ -92,7 +92,7 @@ for (const r of rows) {
   if (!oldUmds.size) continue;
   const successors = Object.entries(sigungu)
     .filter(([, s]) => s.sido === newSido && s.queryable)
-    .map(([code, s]) => ({ code, s, overlap: (umd[code] ?? []).filter((u) => oldUmds.has(lastWord(u))).length }))
+    .map(([code, s]) => ({ code, s, overlap: (umd[code] ?? []).filter(([, u]) => oldUmds.has(lastWord(u))).length }))
     // 흔한 동 이름(중앙동 등) 하나 겹친 것은 무시한다
     .filter((x) => x.overlap >= 2 && x.overlap >= oldUmds.size * 0.1)
     .map((x) => x.code)

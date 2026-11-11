@@ -128,6 +128,18 @@ describe("jeonseRatio", () => {
     expect(r.confidence).toBe("높음");
     expect(r.deposit?.estimatedPrice).toBe(1_555_000_000);
     expect(r.deposit?.depositRatioPercent).toBeCloseTo((1_000_000_000 / 1_555_000_000) * 100, 1);
+    // 전세 시세(9억) 대비, 비교 전세 12건이 모두 입력값 이하
+    expect(r.deposit?.estimatedJeonse).toBe(900_000_000);
+    expect(r.deposit?.depositToJeonsePercent).toBeCloseTo(111.1, 1);
+    expect(r.deposit?.depositPercentile).toBe(100);
+    expect(r.complexes).toBe(1);
+    expect(r.rentExcluded).toEqual({ monthly: 0, renewal: 0 });
+  });
+
+  it("전세 표본에서 뺀 월세·갱신 건수", () => {
+    const mixed = [...rents, rent({ date: "2026-05-01", deposit: 1, monthlyRent: 500_000 }), rent({ date: "2026-05-01", deposit: 1, contractType: "갱신" })];
+    const r = jeonseRatio(yearOfSales, mixed, { propertyType: "apt", months: 12, today: TODAY });
+    expect(r).toMatchObject({ kind: "ratio", rentExcluded: { monthly: 1, renewal: 1 } });
   });
 
   it("월세와 갱신 계약은 전세 표본에서 뺀다", () => {

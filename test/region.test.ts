@@ -90,3 +90,39 @@ describe("코드 조회", () => {
     expect(regionLabel("41117")).toBe("경기도 수원시 영통구");
   });
 });
+
+describe("MCP 리뷰 회귀 (지역)", () => {
+  it("M1: 후보의 query를 그대로 다시 넣으면 그 지역 하나", () => {
+    for (const q of ["신사동", "중구", "인천 중구", "수원시", "아현동", "광주 북구", "세종 죽림리", "인천 서구", "화성시 동탄구"]) {
+      for (const c of resolveRegion(q).matches) {
+        const again = resolveRegion(c.query).matches;
+        expect(again, `${q} → ${c.query}`).toHaveLength(1);
+        expect(again[0]).toMatchObject({ lawdCodes: c.lawdCodes, ...(c.umd ? { umd: c.umd } : {}) });
+      }
+    }
+  });
+
+  it("M1: 법정동 후보의 query에는 법정동이 들어 있다", () => {
+    const m = resolveRegion("신사동").matches;
+    expect(m.length).toBeGreaterThan(1);
+    expect(m.every((x) => x.query.endsWith("신사동"))).toBe(true);
+  });
+
+  it("M2: 10자리 법정동코드는 법정동까지", () => {
+    expect(resolveRegion("1144010100").matches).toEqual([expect.objectContaining({ lawdCodes: ["11440"], umd: "아현동" })]);
+    expect(resolveRegion("1144000000").matches[0]).not.toHaveProperty("umd");
+  });
+
+  it("M3: 광주시는 경기도 광주시", () => {
+    expect(codes("광주시")).toEqual([["41610"]]);
+    expect(resolveRegion("광주시 곤지암읍").matches[0]).toMatchObject({ lawdCodes: ["41610"], umd: "곤지암읍" });
+    expect(codes("서울시 강남구")).toEqual([["11680"]]);
+  });
+
+  it("I1: 행정동과 줄임말", () => {
+    expect(resolveRegion("강남구 역삼1동").matches[0]).toMatchObject({ lawdCodes: ["11680"], umd: "역삼동" });
+    expect(codes("강남")).toEqual([["11680"]]);
+    expect(codes("화성시 동탄")).toEqual([["41597"]]);
+    expect(resolveRegion("강남").note).toContain("강남구");
+  });
+});
