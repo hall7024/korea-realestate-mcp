@@ -19,6 +19,7 @@ export default tseslint.config(
     rules: {
       "@typescript-eslint/no-non-null-assertion": "off",
       "security/detect-non-literal-fs-filename": "off",
+      "security/detect-non-literal-regexp": "off",
     },
   },
 );

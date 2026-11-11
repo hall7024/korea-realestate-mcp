@@ -4,6 +4,7 @@ import { KEY_ENV, normalizeServiceKey, readServiceKey, registerSecret } from "./
 import { log } from "./log.js";
 import { stripRaw, toDeal, type Deal, type DealView } from "./normalize.js";
 import { apiErrorFrom, apiErrorOfKind, parseResponse, type RawItem } from "./parse.js";
+import { isQueryableLawd as queryableInTable } from "./region.js";
 import { serviceUrl, type ServiceId } from "./services.js";
 import { addMonths, isValidYm, todayKst } from "./time.js";
 
@@ -26,7 +27,7 @@ export interface ClientOptions {
   retryDelaysMs?: number[];
   timeoutMs?: number;
   maxBodyBytes?: number;
-  /** 조회 가능한 시군구 코드인가 (기본: 5자리 숫자). 지역 코드표로 바꿔 끼운다 */
+  /** 조회 가능한 시군구 코드인가 (기본: 지역 코드표의 queryable). 옛 코드·시 단위 코드는 오류 없이 0건이 오므로 미리 막는다 */
   isQueryableLawd?: (code: string) => boolean;
 }
 
@@ -120,7 +121,7 @@ export function createClient(opts: ClientOptions = {}): Client {
   const delays = opts.retryDelaysMs ?? [500, 1000, 2000];
   const timeoutMs = opts.timeoutMs ?? 15_000;
   const maxBodyBytes = opts.maxBodyBytes ?? 16 * 1024 * 1024;
-  const isQueryableLawd = opts.isQueryableLawd ?? ((code: string) => /^\d{5}$/.test(code));
+  const isQueryableLawd = opts.isQueryableLawd ?? queryableInTable;
   /** 같은 키로 한 번이라도 성공했는가. 403/30을 "미신청"으로 좁히는 데 쓴다 */
   let keyWorks = false;
 
