@@ -1,4 +1,4 @@
-import { jeonseRatio, marketSummary, type MarketResult, type RatioResult } from "./analytics.js";
+import { inUmd, jeonseRatio, marketSummary, type MarketResult, type RatioResult } from "./analytics.js";
 import type { Client, MonthFailure } from "./client.js";
 import { InputError, type ApiErrorKind } from "./errors.js";
 import type { DealView } from "./normalize.js";
@@ -145,7 +145,6 @@ function monthsOf(ctx: QueryContext, months: number | undefined, def: number, fr
 }
 
 const squash = (s: string) => s.replace(/\s+/g, "").toLowerCase();
-const lastWord = (s: string) => s.trim().split(/\s+/).at(-1) ?? "";
 
 export async function searchDeals(ctx: QueryContext, args: SearchArgs): Promise<SearchResult | RegionCandidates> {
   const picked = pickRegion(args.region);
@@ -158,7 +157,7 @@ export async function searchDeals(ctx: QueryContext, args: SearchArgs): Promise<
   const umd = picked.region.umd;
   const matching = fetched.deals.filter(
     (d) =>
-      (!umd || lastWord(d.umd) === lastWord(umd)) &&
+      (!umd || inUmd(d.umd, umd)) &&
       (!name || squash(d.name ?? "").includes(name)) &&
       (args.areaMin === undefined || (d.area ?? -1) >= args.areaMin) &&
       (args.areaMax === undefined || (d.area ?? Infinity) <= args.areaMax),

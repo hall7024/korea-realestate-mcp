@@ -138,6 +138,17 @@ export const median = (xs: number[]) => Math.round(quantile(xs, 0.5));
 
 const squash = (s: string) => s.replace(/\s+/g, "").toLowerCase();
 const lastWord = (s: string) => s.trim().split(/\s+/).at(-1) ?? "";
+/**
+ * 거래의 법정동이 지정한 법정동에 속하는가.
+ * 응답은 "아현동", "조치원읍 서창리"처럼 오고, 사용자는 "서창리"나 "조치원읍"(그 아래 리 전체)으로 지정할 수 있다.
+ */
+export function inUmd(dealUmd: string, umd: string): boolean {
+  const d = dealUmd.trim();
+  const u = umd.trim();
+  if (/[읍면]$/.test(u)) return d === u || d.startsWith(`${u} `);
+  return lastWord(d) === lastWord(u);
+}
+
 const complexKey = (d: DealView) => `${lastWord(d.umd)}|${d.jibun ?? ""}|${squash(d.name ?? "")}`;
 
 function tolerance(f: AnalysisFilter): number {
@@ -153,7 +164,7 @@ function baseFilter(deals: DealView[], f: AnalysisFilter): DealView[] {
     (d) =>
       d.date > since &&
       d.date <= f.today &&
-      (!f.umd || lastWord(d.umd) === lastWord(f.umd)) &&
+      (!f.umd || inUmd(d.umd, f.umd)) &&
       (!name || squash(d.name ?? "").includes(name)),
   );
 }

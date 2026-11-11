@@ -67,6 +67,11 @@ describe("filterDeals", () => {
     expect(r.deals.map((d) => d.price)).toEqual([2, 3]);
   });
 
+  it("읍·면을 지정하면 그 아래 리 전체", () => {
+    const deals = [sale({ date: "2026-05-01", price: 1, umd: "조치원읍 죽림리" }), sale({ date: "2026-05-01", price: 2, umd: "조치원읍 서창리" }), sale({ date: "2026-05-01", price: 3, umd: "연기면 세종리" })];
+    expect(filterDeals(deals, { propertyType: "rh", months: 12, today: TODAY, umd: "조치원읍" }).deals.map((d) => d.price)).toEqual([1, 2]);
+  });
+
   it("법정동은 마지막 말로 맞춘다", () => {
     const deals = [sale({ date: "2026-05-01", price: 1, umd: "조치원읍 죽림리" }), sale({ date: "2026-05-01", price: 2, umd: "서창리" })];
     expect(filterDeals(deals, { propertyType: "rh", months: 12, today: TODAY, umd: "죽림리" }).deals.map((d) => d.price)).toEqual([1]);
