@@ -1,0 +1,1 @@
+<?xml version="1.0"?><!DOCTYPE r [<!ENTITY x "boom">]><response><header><resultCode>000</resultCode></header><body><items><item><aptNm>&x;</aptNm></item></items><totalCount>1</totalCount></body></response>
