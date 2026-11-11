@@ -34,4 +34,7 @@ jobs:
           TAG: ${{ github.ref_name }}
         run: test "v$(node -p 'require("./package.json").version')" = "$TAG"
       - run: npm install -g npm@11
-      - run: npm publish --access public
+      # 첫 배포(0.1.0)만 release 환경의 NPM_TOKEN을 쓴다. 이후에는 secret을 지우고 trusted publishing(OIDC)으로 배포한다
+      - run: npm publish --provenance --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
