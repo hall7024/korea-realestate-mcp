@@ -88,10 +88,14 @@ const KIND_BY_CODE: Record<string, ApiErrorKind> = {
  * 30은 "키가 틀림"과 "그 서비스 미신청"이 바이트까지 같은 응답이라, 같은 키로 다른 서비스가 성공한 적이 있을 때만(keyWorks) 미신청으로 좁힌다.
  */
 export function apiErrorFrom(service: ServiceId, status: number, gatewayCode: string | undefined, opts: { keyWorks?: boolean } = {}): ApiError {
-  const def = SERVICES[service];
   let kind: ApiErrorKind = gatewayCode ? (KIND_BY_CODE[gatewayCode] ?? "upstream") : status === 429 ? "rate_limit" : "upstream";
   if (kind === "key_or_subscription" && opts.keyWorks) kind = "not_subscribed";
+  return apiErrorOfKind(service, kind, status, gatewayCode);
+}
 
+/** 종류로 오류를 만든다. 메시지는 한국어이고 URL·응답 본문은 담지 않는다 */
+export function apiErrorOfKind(service: ServiceId, kind: ApiErrorKind, status?: number, gatewayCode?: string): ApiError {
+  const def = SERVICES[service];
   const apply = `공공데이터포털(data.go.kr/data/${def.dataset}/openapi.do)에서 '${def.label}' 활용신청을 하세요. 자동승인이며 반영까지 최대 1시간 걸릴 수 있습니다.`;
   const messages: Record<ApiErrorKind, [string, string]> = {
     key_or_subscription: [`${def.label} 조회가 거부됐습니다 (등록되지 않은 서비스키).`, `${KEY_ENV} 값이 맞는지 확인하거나, ${apply}`],
@@ -107,6 +111,10 @@ export function apiErrorFrom(service: ServiceId, status: number, gatewayCode: st
     upstream: ["공공데이터포털이 오류를 돌려줬습니다.", "잠시 뒤 다시 시도하세요."],
   };
   const [message, hint] = messages[kind];
-  const codeText = gatewayCode ? `, 코드 ${gatewayCode}` : "";
-  return new ApiError(kind, `${message} (HTTP ${status}${codeText})`, hint, { service, status, ...(gatewayCode ? { gatewayCode } : {}) });
+  const meta = [status ? `HTTP ${status}` : "", gatewayCode ? `코드 ${gatewayCode}` : ""].filter(Boolean).join(", ");
+  return new ApiError(kind, meta ? `${message} (${meta})` : message, hint, {
+    service,
+    ...(status ? { status } : {}),
+    ...(gatewayCode ? { gatewayCode } : {}),
+  });
 }
