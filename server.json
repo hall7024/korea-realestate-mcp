@@ -1,0 +1,28 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.hall7024/korea-realestate-mcp",
+  "title": "Korea Real Estate",
+  "description": "국토교통부 실거래가 13종 조회와 시세·전세가율 분석 (공공데이터포털 키 필요)",
+  "repository": {
+    "url": "https://github.com/hall7024/korea-realestate-mcp",
+    "source": "github"
+  },
+  "version": "0.1.0",
+  "packages": [
+    {
+      "registryType": "npm",
+      "identifier": "korea-realestate-mcp",
+      "version": "0.1.0",
+      "transport": { "type": "stdio" },
+      "environmentVariables": [
+        {
+          "name": "DATA_GO_KR_SERVICE_KEY",
+          "description": "공공데이터포털 일반 인증키 (Encoding·Decoding 어느 쪽이든)",
+          "isRequired": true,
+          "isSecret": true,
+          "format": "string"
+        }
+      ]
+    }
+  ]
+}
