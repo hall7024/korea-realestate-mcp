@@ -5,7 +5,7 @@
 공개 이슈로 올리지 말고 GitHub의 비공개 취약점 신고를 이용해 주세요:
 저장소의 **Security → Report a vulnerability**.
 
-받은 신고는 7일 안에 답하고, 고친 버전을 배포한 뒤 공개합니다.
+확인하는 대로 답하고, 고친 버전을 배포한 뒤 공개합니다.
 
 ## 지원 버전
 
@@ -18,7 +18,7 @@
 - 요청은 `https://apis.data.go.kr`로만 보내고 리다이렉트를 따르지 않습니다.
 - 응답 XML은 DOCTYPE을 거부하고, 값의 길이를 제한하며, 응답 텍스트를 지시로 다루지 않도록 서버 안내에 적습니다.
 - 런타임 의존성은 3개(`@modelcontextprotocol/sdk`, `zod`, `fast-xml-parser`)이고 버전을 고정합니다.
-- npm 배포는 GitHub Actions의 trusted publishing(OIDC)으로만 하며 provenance가 붙습니다.
+- npm 배포는 GitHub Actions에서 하며 provenance가 붙습니다. 첫 배포 뒤에는 trusted publishing(OIDC)만 쓰고 토큰 배포를 막습니다.
 
 ## 사용자에게 권하는 것
 

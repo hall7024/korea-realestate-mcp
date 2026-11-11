@@ -52,8 +52,8 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - run: python3 -m pip install --user semgrep==1.185.0
-      - run: ~/.local/bin/semgrep scan --config p/typescript --config p/owasp-top-ten --error --metrics off src
+      # 러너의 시스템 Python은 pip 설치를 막을 수 있어(PEP 668) pipx로 실행한다
+      - run: pipx run semgrep==1.185.0 scan --config p/typescript --config p/owasp-top-ten --error --metrics off src
 
   zizmor:
     runs-on: ubuntu-latest

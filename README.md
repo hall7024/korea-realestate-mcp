@@ -146,7 +146,7 @@ const r = await summarize({ client }, { propertyType: "apt", region: "마포구 
 - 요청은 `https://apis.data.go.kr`로만, `redirect: "error"`, 타임아웃 15초, 응답 16MB 상한, 동시 4건으로 보냅니다.
 - XML은 DOCTYPE을 거부하고 값을 문자열 그대로, 200자 제한으로 읽습니다. 업스트림 코드 값은 숫자일 때만 믿습니다.
 - 로그는 stderr로만, 서비스·지역·달·상태만 남깁니다.
-- 저장소는 gitleaks(serviceKey 규칙 포함)·Semgrep·zizmor·CodeQL·Dependabot을 쓰고, 액션은 SHA로 고정합니다. npm 배포는 trusted publishing과 provenance로만 합니다.
+- 저장소는 gitleaks(serviceKey 규칙 포함)·Semgrep·zizmor·CodeQL·Dependabot을 쓰고, 액션은 SHA로 고정합니다. npm 배포는 GitHub Actions에서 provenance를 붙여 하고, 첫 배포 뒤에는 trusted publishing(OIDC)만 씁니다.
 
 취약점은 [SECURITY.md](SECURITY.md)의 방법으로 알려 주세요.
 
