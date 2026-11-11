@@ -1,0 +1,17 @@
+[extend]
+useDefault = true
+
+[[rules]]
+id = "data-go-kr-service-key-in-url"
+description = "공공데이터포털 serviceKey가 URL에 들어감"
+regex = '''serviceKey=[A-Za-z0-9%+/=]{20,}'''
+
+[[rules]]
+id = "data-go-kr-service-key-env"
+description = "DATA_GO_KR_SERVICE_KEY 값"
+regex = '''DATA_GO_KR_SERVICE_KEY\s*[=:]\s*["']?[A-Za-z0-9%+/=]{20,}'''
+
+[[rules]]
+id = "molit-api-key-env"
+description = "MOLIT_API_KEY 값"
+regex = '''MOLIT_API_KEY\s*[=:]\s*["']?[A-Za-z0-9%+/=]{20,}'''
