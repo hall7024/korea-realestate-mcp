@@ -1,0 +1,43 @@
+{
+  "name": "korea-realestate-mcp",
+  "version": "0.1.0",
+  "description": "국토교통부 실거래가 13종 조회와 시세·전세가율 분석 — MCP 서버, CLI, 라이브러리",
+  "keywords": ["mcp", "model-context-protocol", "korea", "real-estate", "실거래가", "전세가율", "data.go.kr", "molit"],
+  "license": "MIT",
+  "author": "hall7024",
+  "repository": { "type": "git", "url": "git+https://github.com/hall7024/korea-realestate-mcp.git" },
+  "homepage": "https://github.com/hall7024/korea-realestate-mcp#readme",
+  "bugs": "https://github.com/hall7024/korea-realestate-mcp/issues",
+  "mcpName": "io.github.hall7024/korea-realestate-mcp",
+  "type": "module",
+  "engines": { "node": ">=22" },
+  "bin": { "korea-realestate-mcp": "dist/cli/main.js" },
+  "exports": {
+    ".": { "types": "./dist/core/index.d.ts", "default": "./dist/core/index.js" },
+    "./package.json": "./package.json"
+  },
+  "files": ["dist", "data/regions.json", "data/SOURCES.md"],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "gen:regions": "tsx scripts/gen-regions.ts"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "1.32.2",
+    "fast-xml-parser": "5.12.0",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "@types/node": "22.20.5",
+    "eslint": "10.14.0",
+    "eslint-plugin-security": "4.2.1",
+    "tsx": "4.23.15",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.72.2",
+    "vitest": "5.1.0"
+  },
+  "packageManager": "pnpm@10.31.0"
+}
