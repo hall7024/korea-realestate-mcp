@@ -104,7 +104,9 @@ describe("apiErrorFrom", () => {
   });
 
   it.each([
-    ["20", "no_key"],
+    ["20", "access_denied"],
+    ["12", "service_not_found"],
+    ["29", "ip_not_allowed"],
     ["22", "daily_limit"],
     ["23", "rate_limit"],
     ["31", "expired"],
@@ -112,6 +114,21 @@ describe("apiErrorFrom", () => {
     ["99", "upstream"],
   ])("%s → %s", (code, kind) => {
     expect(apiErrorFrom("apt-sale", 200, code).kind).toBe(kind);
+  });
+
+  it("20은 키가 비었다는 응답일 때만 no_key", () => {
+    expect(apiErrorFrom("apt-sale", 401, "20", { errMsg: "SERVICE_KEY_IS_NULL" }).kind).toBe("no_key");
+    expect(parseResponse(live("errors/missing-key.xml"))).toMatchObject({ errMsg: "SERVICE_KEY_IS_NULL" });
+  });
+
+  it("업스트림 코드는 숫자일 때만 믿는다", () => {
+    expect(apiErrorFrom("apt-sale", 200, "constructor").kind).toBe("upstream");
+    expect(apiErrorFrom("apt-sale", 200, "__proto__").kind).toBe("upstream");
+  });
+
+  it("미검증 서비스의 30은 경로 문제 가능성도 알린다", () => {
+    expect(apiErrorFrom("land-sale", 403, "30").hint).toContain("서비스 경로");
+    expect(apiErrorFrom("apt-sale", 403, "30").hint).not.toContain("서비스 경로");
   });
 
   it("코드가 없으면 HTTP 상태로", () => {

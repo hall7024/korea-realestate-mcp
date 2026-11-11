@@ -22,6 +22,7 @@ function sale(p: Partial<DealView> & { date: string; price: number }): DealView 
     direct: false,
     cancelled: false,
     houseType: null,
+    complexId: null,
     ...p,
   };
 }

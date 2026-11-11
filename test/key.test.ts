@@ -51,3 +51,9 @@ describe("redact", () => {
     expect(redact(`Failed to parse URL from https://x/?serviceKey=${ENCODED}&a=1`)).not.toContain("abcdEFGH1234");
   });
 });
+
+describe("maskSecrets: + 가 공백으로 바뀐 형태", () => {
+  it("지운다", () => {
+    expect(maskSecrets(`x ${DECODED.replace(/\+/g, " ")} y`, [DECODED])).not.toContain("abcdEFGH1234");
+  });
+});

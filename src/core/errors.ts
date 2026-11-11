@@ -34,6 +34,16 @@ export type ApiErrorKind =
   | "timeout"
   | "network"
   | "too_large"
+  /** 게이트웨이 20 중 키가 있는데 거부된 경우 (이용 정지·승인 취소 등) */
+  | "access_denied"
+  /** 게이트웨이 29·32: 등록되지 않거나 차단된 IP */
+  | "ip_not_allowed"
+  /** 게이트웨이 12: 서비스 경로가 없거나 폐기됨 */
+  | "service_not_found"
+  /** 쪽을 다 돌았는데 totalCount보다 적게 받음 */
+  | "incomplete"
+  /** 응답에 레코드가 있는데 하나도 해석하지 못함 (필드 이름이 바뀜) */
+  | "schema"
   | "upstream";
 
 /**

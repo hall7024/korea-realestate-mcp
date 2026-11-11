@@ -32,3 +32,11 @@ describe("time", () => {
     expect(isValidYm("202613", "2026-11-11")).toBe(false);
   });
 });
+
+describe("time: 잘못된 월", () => {
+  it("monthRange는 01~12만 받는다", () => {
+    expect(() => monthRange("202613", "202614")).toThrow();
+    expect(() => monthRange("202600", "202601")).toThrow();
+    expect(isValidYm("202600", "2026-11-11")).toBe(false);
+  });
+});

@@ -22,6 +22,11 @@ const KIND_LABEL: Record<ApiErrorKind, string> = {
   timeout: "시간 초과",
   network: "연결 실패",
   too_large: "응답 과대",
+  access_denied: "접근 거부",
+  ip_not_allowed: "IP 제한",
+  service_not_found: "서비스 없음",
+  incomplete: "불완전한 응답",
+  schema: "해석 실패",
   upstream: "일시 오류",
 };
 

@@ -35,6 +35,8 @@ export function maskSecrets(text: string, secrets: Iterable<string>): string {
       secret,
       encodeURIComponent(secret),
       new URLSearchParams({ k: secret }).toString().slice(2),
+      // Decoding 키가 URL에 그대로 실리면 서버가 +를 공백으로 읽어 이 모양으로 보여 준다
+      secret.replace(/\+/g, " "),
     ]);
     // escapeRegExp로 메타문자를 모두 이스케이프한 리터럴 패턴이다
     // eslint-disable-next-line security/detect-non-literal-regexp

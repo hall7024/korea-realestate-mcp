@@ -39,7 +39,8 @@ export function monthsBack(today: string, count: number): string[] {
 export function monthRange(from: string, to: string): string[] {
   const f = YM.exec(from);
   const t = YM.exec(to);
-  if (!f || !t) throw new InputError("from·to는 YYYYMM 형식이어야 합니다.");
+  const validMonth = (m: RegExpExecArray | null) => m !== null && Number(m[2]) >= 1 && Number(m[2]) <= 12;
+  if (!validMonth(f) || !validMonth(t) || !f || !t) throw new InputError("from·to는 YYYYMM 형식이어야 합니다 (월 01~12).");
   const start = Number(f[1]) * 12 + Number(f[2]) - 1;
   const end = Number(t[1]) * 12 + Number(t[2]) - 1;
   if (start > end) throw new InputError("from이 to보다 늦습니다.");

@@ -28,6 +28,8 @@ export interface Deal {
   cancelled: boolean;
   /** 연립다세대의 주택 유형: "연립", "다세대", "연립다세대" */
   houseType: string | null;
+  /** 단지 식별자 (아파트 전월세의 aptSeq). 없으면 null */
+  complexId: string | null;
   /** 응답 원자료 (trim, 빈 값은 null) */
   raw: RawItem;
 }
@@ -50,19 +52,20 @@ function parseNumber(value: string | null | undefined): number | null {
 
 const pad2 = (s: string) => s.padStart(2, "0");
 
-/** 응답 레코드를 Deal로. 계약일이나 시군구 코드가 없으면 null */
-export function toDeal(service: ServiceId, item: RawItem): Deal | null {
+/** 응답 레코드를 Deal로. 계약일이 없으면 null. 시군구 코드가 없으면 요청한 코드를 쓴다 */
+export function toDeal(service: ServiceId, item: RawItem, requestedLawd?: string): Deal | null {
   const def = SERVICES[service];
   const year = item.dealYear;
   const month = item.dealMonth;
   const day = item.dealDay;
-  const lawdCode = item.sggCd;
+  const lawdCode = item.sggCd ?? requestedLawd;
   if (!year || !month || !day || !/^\d{4}$/.test(year) || !/^\d{1,2}$/.test(month) || !/^\d{1,2}$/.test(day)) return null;
   if (!lawdCode || !/^\d{5}$/.test(lawdCode)) return null;
 
   const contract = item.contractType;
   const floor = parseNumber(item.floor);
   const buildYear = parseNumber(item.buildYear);
+  const area = parseNumber(item[def.areaField]);
   return {
     service,
     kind: def.kind,
@@ -70,7 +73,7 @@ export function toDeal(service: ServiceId, item: RawItem): Deal | null {
     umd: item.umdNm ?? "",
     jibun: item.jibun ?? null,
     name: def.nameField ? (item[def.nameField] ?? null) : null,
-    area: parseNumber(item[def.areaField]),
+    area: area !== null && area > 0 ? area : null,
     areaKind: def.areaKind,
     floor: floor === null ? null : Math.trunc(floor),
     buildYear: buildYear === null ? null : Math.trunc(buildYear),
@@ -82,6 +85,7 @@ export function toDeal(service: ServiceId, item: RawItem): Deal | null {
     direct: item.dealingGbn === "직거래",
     cancelled: item.cdealType === "O",
     houseType: item.houseType ?? null,
+    complexId: item.aptSeq ?? null,
     raw: item,
   };
 }
