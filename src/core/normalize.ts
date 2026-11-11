@@ -43,8 +43,9 @@ export function parseManwon(value: string | null | undefined): number | null {
 
 function parseNumber(value: string | null | undefined): number | null {
   const s = value?.replace(/,/g, "").trim();
-  if (!s || !/^-?\d+(\.\d+)?$/.test(s)) return null;
-  return Number(s);
+  if (!s || !/^[-\d.]+$/.test(s)) return null;
+  const n = Number(s);
+  return Number.isFinite(n) ? n : null;
 }
 
 const pad2 = (s: string) => s.padStart(2, "0");
