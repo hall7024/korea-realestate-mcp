@@ -36,6 +36,8 @@ export interface MonthPoint {
   median: number | null;
   /** 신고 기한(30일) 안이라 건수가 덜 잡혔을 수 있는 달 */
   partial: boolean;
+  /** 기간 시작일 이후 거래만 들어간 첫 달 */
+  clipped: boolean;
 }
 
 export interface MarketSummary {
@@ -210,11 +212,13 @@ export function marketSummary(deals: DealView[], f: AnalysisFilter): MarketResul
 
   const prices = nums(kept.map((d) => d.price));
   const recentFrom = monthsBack(f.today, 2).at(-1) ?? "";
+  const since = addMonths(f.today, -f.months);
+  const sinceYm = since.slice(0, 7).replace("-", "");
   const monthly = monthsBack(f.today, f.months + 1)
     .reverse()
     .map((ym) => {
       const inMonth = nums(kept.filter((d) => d.date.slice(0, 7).replace("-", "") === ym).map((d) => d.price));
-      return { ym, count: inMonth.length, median: inMonth.length >= MONTH_MIN ? median(inMonth) : null, partial: ym >= recentFrom };
+      return { ym, count: inMonth.length, median: inMonth.length >= MONTH_MIN ? median(inMonth) : null, partial: ym >= recentFrom, clipped: ym === sinceYm && !since.endsWith("-01") };
     });
   return {
     kind: "summary",

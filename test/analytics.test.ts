@@ -86,6 +86,7 @@ describe("marketSummary", () => {
     expect(r.monthly).toHaveLength(13);
     expect(r.monthly.every((m) => m.median === null)).toBe(true); // 달마다 1건 < 3
     expect(r.monthly.filter((m) => m.partial).map((m) => m.ym)).toEqual(["202610", "202611"]);
+    expect(r.monthly.filter((m) => m.clipped).map((m) => m.ym)).toEqual(["202511"]);
     expect(r.recent[0]!.date).toBe("2026-11-05");
     expect(r.recent).toHaveLength(5);
   });

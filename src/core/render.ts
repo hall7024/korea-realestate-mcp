@@ -128,10 +128,10 @@ function summaryBody(s: MarketSummary): string[] {
         ["최근 계약일", s.latestDate],
       ],
     ),
-    "월별 추이 (표본 3건 미만인 달은 중앙값 생략, *는 신고 기한 30일 안이라 건수가 덜 잡혔을 수 있음):",
+    "월별 추이 (표본 3건 미만인 달은 중앙값 생략, *는 신고 기한 30일 안이라 건수가 덜 잡혔을 수 있음, †는 기간 시작일 이후 거래만):",
     table(
       ["월", "건수", "중앙값"],
-      s.monthly.map((m) => [`${ymLabel(m.ym)}${m.partial ? "*" : ""}`, m.count, m.median === null ? "-" : won(m.median)]),
+      s.monthly.map((m) => [`${ymLabel(m.ym)}${m.partial ? "*" : ""}${m.clipped ? "†" : ""}`, m.count, m.median === null ? "-" : won(m.median)]),
     ),
     "최근 거래:",
     dealRows(s.recent),
