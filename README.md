@@ -1,5 +1,7 @@
 # korea-realestate-mcp
 
+[![npm](https://img.shields.io/npm/v/korea-realestate-mcp)](https://www.npmjs.com/package/korea-realestate-mcp) [![ci](https://github.com/hall7024/korea-realestate-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/hall7024/korea-realestate-mcp/actions/workflows/ci.yml)
+
 국토교통부 실거래가 공개자료로 **아파트·빌라·오피스텔의 시세와 전세가율**을 계산하는 MCP 서버, CLI, TypeScript 라이브러리입니다.
 Claude에게 "이 단지 84㎡ 시세가 어때?", "이 빌라 전세 4억이면 시세 대비 몇 %야?"라고 물으면 실거래 원자료로 근거 있는 숫자를 답할 수 있게 합니다.
 
