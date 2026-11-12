@@ -1,6 +1,6 @@
 {
   "name": "korea-realestate-mcp",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "국토교통부 실거래가 13종 조회와 시세·전세가율 분석 — MCP 서버, CLI, 라이브러리",
   "keywords": ["mcp", "model-context-protocol", "korea", "real-estate", "실거래가", "전세가율", "data.go.kr", "molit"],
   "license": "MIT",

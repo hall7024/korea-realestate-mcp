@@ -25,9 +25,8 @@
 ## npm 배포
 
 - 0.1.0만 단기 토큰으로 CI에서 배포했다(2026-11-13). 그 뒤 trusted publisher(hall7024/korea-realestate-mcp, release.yml, environment release)를 등록하고, 토큰 게시를 막고, 토큰을 폐기했다.
-- 이후 버전: package.json·server.json·CHANGELOG 버전을 올리고 커밋한 뒤 `v<버전>` 태그를 push한다. release.yml이 OIDC로 배포한다.
+- 이후 버전: package.json·server.json·CHANGELOG 버전을 올리고 커밋한 뒤 `v<버전>` 태그를 push한다. release.yml이 OIDC로 npm에 배포하고, 이어서 MCP 레지스트리에도 GitHub OIDC로 등록한다.
 
 ## 배포 후
 
 - [ ] `npx -y korea-realestate-mcp@0.1 doctor`로 동작을 확인한다
-- [ ] MCP 레지스트리에 등록한다: `mcp-publisher login github`, 이어서 `mcp-publisher publish`. `server.json`과 package.json의 버전, `mcpName`이 맞아야 한다

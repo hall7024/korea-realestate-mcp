@@ -29,12 +29,38 @@ jobs:
           package-manager-cache: false
       - run: pnpm install --frozen-lockfile
       - run: pnpm typecheck && pnpm lint && pnpm test && pnpm build
-      - name: 태그와 package.json 버전이 같은지 확인
+      - name: 태그와 package.json·server.json 버전이 같은지 확인
         env:
           TAG: ${{ github.ref_name }}
-        run: test "v$(node -p 'require("./package.json").version')" = "$TAG"
+        run: |
+          test "v$(node -p 'require("./package.json").version')" = "$TAG"
+          test "v$(node -p 'require("./server.json").version')" = "$TAG"
+          test "v$(node -p 'require("./server.json").packages[0].version')" = "$TAG"
       # trusted publishing에는 npm 11.5.1 이상이 필요하다. 따로 설치하지 않고 Node 24에 든 npm을 쓴다
       - name: npm 버전 확인
         run: node -e 'const [a,b,c]=process.argv[1].split(".").map(Number); process.exit(a>11||(a===11&&(b>5||(b===5&&c>=1)))?0:1)' "$(npm --version)"
       # trusted publishing(OIDC). 토큰 게시는 npm 설정에서 막혀 있다
       - run: npm publish --provenance --access public
+
+  # npm 배포가 끝나면 MCP 레지스트리에 같은 버전을 등록한다. GitHub OIDC로 io.github.hall7024 네임스페이스를 인증한다
+  registry:
+    needs: publish
+    runs-on: ubuntu-latest
+    environment: release
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      MCP_PUBLISHER_VERSION: v1.8.9
+      MCP_PUBLISHER_SHA256: 4d527ca8f1ced0394c962dc925c2a4a4addef441cbefd62501c875e9481823a8
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: mcp-publisher 설치 (체크섬 확인)
+        run: |
+          curl -fsSL -o mcp-publisher.tar.gz "https://github.com/modelcontextprotocol/registry/releases/download/${MCP_PUBLISHER_VERSION}/mcp-publisher_linux_amd64.tar.gz"
+          echo "${MCP_PUBLISHER_SHA256}  mcp-publisher.tar.gz" | sha256sum -c -
+          tar xzf mcp-publisher.tar.gz mcp-publisher
+      - run: ./mcp-publisher login github-oidc
+      - run: ./mcp-publisher publish
