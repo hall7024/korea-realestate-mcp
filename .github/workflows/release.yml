@@ -62,5 +62,15 @@ jobs:
           curl -fsSL -o mcp-publisher.tar.gz "https://github.com/modelcontextprotocol/registry/releases/download/${MCP_PUBLISHER_VERSION}/mcp-publisher_linux_amd64.tar.gz"
           echo "${MCP_PUBLISHER_SHA256}  mcp-publisher.tar.gz" | sha256sum -c -
           tar xzf mcp-publisher.tar.gz mcp-publisher
+      # npm은 게시 후 몇 분 뒤에야 새 버전을 보여 준다. 레지스트리는 npm에 그 버전이 있어야 등록을 받는다
+      - name: npm에 새 버전이 보일 때까지 대기 (최대 15분)
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          for _ in $(seq 1 90); do
+            npm view "korea-realestate-mcp@${TAG#v}" version >/dev/null 2>&1 && exit 0
+            sleep 10
+          done
+          exit 1
       - run: ./mcp-publisher login github-oidc
       - run: ./mcp-publisher publish
