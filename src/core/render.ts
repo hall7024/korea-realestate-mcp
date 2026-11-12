@@ -111,7 +111,6 @@ function header(region: { label: string; umd?: string }, what: string, note?: st
 export function renderSearch(r: SearchResult, now: Date): string {
   const def = SERVICES[r.service];
   const lines = header(r.region, `${def.label} 실거래 (${periodOf(r.months)})`, r.note);
-  if (!r.verified) lines.push(`⚠ ${def.label}는 실제 응답으로 필드를 검증하지 않은 서비스입니다. 면적·이름 값이 비어 있을 수 있습니다.`);
   if (r.total === 0) lines.push(zero(r.failures.length > 0));
   else {
     lines.push(`조건에 맞는 거래 ${r.total}건 중 최신 ${r.deals.length}건 (금액은 원 단위 환산):`);

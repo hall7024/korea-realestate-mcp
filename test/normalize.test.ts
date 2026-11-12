@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { parseManwon, stripRaw, toDeal } from "../src/core/normalize.js";
 import { parseResponse, type RawItem } from "../src/core/parse.js";
+import { SERVICES, type ServiceId } from "../src/core/services.js";
 
 function items(path: string): RawItem[] {
   const page = parseResponse(readFileSync(new URL(`./fixtures/${path}`, import.meta.url), "utf8"));
@@ -70,17 +71,22 @@ describe("toDeal", () => {
     expect(toDeal("apt-sale", item)).toBeNull();
   });
 
-  it("모든 실측 레코드가 정규화된다", () => {
-    const pairs = [
-      ["apt-sale", "RTMSDataSvcAptTrade"],
-      ["apt-rent", "RTMSDataSvcAptRent"],
-      ["rh-sale", "RTMSDataSvcRHTrade2"],
-      ["rh-rent", "RTMSDataSvcRHRent"],
-      ["offi-sale", "RTMSDataSvcOffiTrade"],
-    ] as const;
-    for (const [service, file] of pairs) {
-      const deals = items(`live/${file}.xml`).map((i) => toDeal(service, i));
-      expect(deals.every((d) => d !== null && d.area !== null && d.area > 0)).toBe(true);
+  it("오피스텔 전월세: 신규 전세", () => {
+    const deal = toDeal("offi-rent", items("live/RTMSDataSvcOffiRent.xml")[0]!);
+    expect(deal).toMatchObject({ name: "산울마을 6단지", deposit: 100_000_000, monthlyRent: 0, contractType: "신규", area: 23.29, floor: 4 });
+  });
+
+  it("단독·다가구 전월세: 연면적, 이름 없음", () => {
+    const deal = toDeal("sh-rent", items("live/RTMSDataSvcSHRent.xml")[0]!);
+    expect(deal).toMatchObject({ name: null, areaKind: "floor_total", area: 30, houseType: "다가구", deposit: 2_000_000, monthlyRent: 280_000 });
+  });
+
+  it("13종 실측 레코드가 모두 정규화된다", () => {
+    for (const [service, def] of Object.entries(SERVICES) as [ServiceId, (typeof SERVICES)[ServiceId]][]) {
+      const deals = items(`live/${def.service}.xml`).map((i) => toDeal(service, i));
+      expect(deals.length, service).toBeGreaterThan(0);
+      expect(deals.every((d) => d !== null && d.area !== null && d.area > 0), service).toBe(true);
+      if (def.nameField) expect(deals.every((d) => d?.name), service).toBe(true);
     }
   });
 

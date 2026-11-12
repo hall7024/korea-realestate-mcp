@@ -18,10 +18,18 @@
 | RTMSDataSvcRHTrade2 | 200 | 000 | 8 (전부 들어 있음) | `RTMSDataSvcRHTrade2.xml` |
 | RTMSDataSvcRHRent | 200 | 000 | 47 | `RTMSDataSvcRHRent.xml` |
 | RTMSDataSvcOffiTrade | 200 | 000 | 22 | `RTMSDataSvcOffiTrade.xml` |
-| AptTradeDev, SilvTrade, SHTrade, SHRent, OffiRent, NrgTrade, LandTrade, InduTrade | **403** | 게이트웨이 30 | – | `errors/unsubscribed-service.xml` |
+| RTMSDataSvcAptTradeDev | 200 | 000 | 676 | `RTMSDataSvcAptTradeDev.xml` |
+| RTMSDataSvcSilvTrade | 200 | 000 | 2 | `RTMSDataSvcSilvTrade.xml` |
+| RTMSDataSvcSHTrade | 200 | 000 | 4 | `RTMSDataSvcSHTrade.xml` |
+| RTMSDataSvcSHRent | 200 | 000 | 149 | `RTMSDataSvcSHRent.xml` |
+| RTMSDataSvcOffiRent | 200 | 000 | 81 | `RTMSDataSvcOffiRent.xml` |
+| RTMSDataSvcNrgTrade | 200 | 000 | 18 | `RTMSDataSvcNrgTrade.xml` |
+| RTMSDataSvcLandTrade | 200 | 000 | 166 | `RTMSDataSvcLandTrade.xml` |
+| RTMSDataSvcInduTrade | 200 | 000 | 2 | `RTMSDataSvcInduTrade.xml` |
 
-- **8종은 이 키에 활용신청이 안 돼 있다.** podokit은 5종만 신청했다.
-- **사용자 할 일:** 공공데이터포털에서 8종 활용신청(자동승인). 신청 후 같은 방법으로 8건을 받아 fixture를 채우면 된다.
+- 처음(2026-11-11)에는 아래 8종이 미신청이라 403(게이트웨이 30)이 왔다. 2026-11-12 프로젝트 전용 키로 13종을 신청한 뒤 8종을 같은 조건으로 받았다.
+- 8종 필드: AptTradeDev는 AptTrade에 `aptSeq`·`aptDong`·도로명·`rgstDate` 등이 더 있다. OffiRent는 AptRent와 같은 구조(`offiNm`). SH는 이름 없이 `totalFloorAr`·`houseType`. Nrg·Indu는 `buildingAr`, Land는 `dealArea`.
+- SHTrade·LandTrade·InduTrade의 `jibun`은 `2**`, `8*`처럼 일부가 가려져 온다. SHRent에는 `jibun`이 없다.
 - 미신청 서비스 응답은 잘못된 키 응답과 **바이트까지 같다**. 응답만 보고는 둘을 구분할 수 없다.
 
 ## 2. 오류 응답 (`errors/`)

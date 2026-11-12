@@ -19,24 +19,22 @@ export interface ServiceDef {
   nameField: string | null;
   areaField: string;
   areaKind: AreaKind;
-  /** 실제 응답으로 필드를 확인했는가. false면 문서만 보고 정의했다 */
-  verified: boolean;
 }
 
 export const SERVICES = {
-  "apt-sale": { service: "RTMSDataSvcAptTrade", dataset: "15126469", label: "아파트 매매", propertyType: "apt", kind: "sale", nameField: "aptNm", areaField: "excluUseAr", areaKind: "exclusive", verified: true },
-  "apt-sale-detail": { service: "RTMSDataSvcAptTradeDev", dataset: "15126468", label: "아파트 매매 상세", propertyType: "apt", kind: "sale", nameField: "aptNm", areaField: "excluUseAr", areaKind: "exclusive", verified: false },
-  "apt-rent": { service: "RTMSDataSvcAptRent", dataset: "15126474", label: "아파트 전월세", propertyType: "apt", kind: "rent", nameField: "aptNm", areaField: "excluUseAr", areaKind: "exclusive", verified: true },
-  presale: { service: "RTMSDataSvcSilvTrade", dataset: "15126471", label: "분양·입주권 전매", propertyType: "presale", kind: "sale", nameField: "aptNm", areaField: "excluUseAr", areaKind: "exclusive", verified: false },
-  "rh-sale": { service: "RTMSDataSvcRHTrade2", dataset: "15126467", label: "연립다세대 매매", propertyType: "rh", kind: "sale", nameField: "mhouseNm", areaField: "excluUseAr", areaKind: "exclusive", verified: true },
-  "rh-rent": { service: "RTMSDataSvcRHRent", dataset: "15126473", label: "연립다세대 전월세", propertyType: "rh", kind: "rent", nameField: "mhouseNm", areaField: "excluUseAr", areaKind: "exclusive", verified: true },
-  "sh-sale": { service: "RTMSDataSvcSHTrade", dataset: "15126465", label: "단독·다가구 매매", propertyType: "sh", kind: "sale", nameField: null, areaField: "totalFloorAr", areaKind: "floor_total", verified: false },
-  "sh-rent": { service: "RTMSDataSvcSHRent", dataset: "15126472", label: "단독·다가구 전월세", propertyType: "sh", kind: "rent", nameField: null, areaField: "totalFloorAr", areaKind: "floor_total", verified: false },
-  "offi-sale": { service: "RTMSDataSvcOffiTrade", dataset: "15126464", label: "오피스텔 매매", propertyType: "offi", kind: "sale", nameField: "offiNm", areaField: "excluUseAr", areaKind: "exclusive", verified: true },
-  "offi-rent": { service: "RTMSDataSvcOffiRent", dataset: "15126475", label: "오피스텔 전월세", propertyType: "offi", kind: "rent", nameField: "offiNm", areaField: "excluUseAr", areaKind: "exclusive", verified: false },
-  "commercial-sale": { service: "RTMSDataSvcNrgTrade", dataset: "15126463", label: "상업업무용 매매", propertyType: "commercial", kind: "sale", nameField: null, areaField: "buildingAr", areaKind: "building", verified: false },
-  "land-sale": { service: "RTMSDataSvcLandTrade", dataset: "15126466", label: "토지 매매", propertyType: "land", kind: "sale", nameField: null, areaField: "dealArea", areaKind: "deal", verified: false },
-  "industrial-sale": { service: "RTMSDataSvcInduTrade", dataset: "15126470", label: "공장·창고 매매", propertyType: "industrial", kind: "sale", nameField: null, areaField: "buildingAr", areaKind: "building", verified: false },
+  "apt-sale": { service: "RTMSDataSvcAptTrade", dataset: "15126469", label: "아파트 매매", propertyType: "apt", kind: "sale", nameField: "aptNm", areaField: "excluUseAr", areaKind: "exclusive" },
+  "apt-sale-detail": { service: "RTMSDataSvcAptTradeDev", dataset: "15126468", label: "아파트 매매 상세", propertyType: "apt", kind: "sale", nameField: "aptNm", areaField: "excluUseAr", areaKind: "exclusive" },
+  "apt-rent": { service: "RTMSDataSvcAptRent", dataset: "15126474", label: "아파트 전월세", propertyType: "apt", kind: "rent", nameField: "aptNm", areaField: "excluUseAr", areaKind: "exclusive" },
+  presale: { service: "RTMSDataSvcSilvTrade", dataset: "15126471", label: "분양·입주권 전매", propertyType: "presale", kind: "sale", nameField: "aptNm", areaField: "excluUseAr", areaKind: "exclusive" },
+  "rh-sale": { service: "RTMSDataSvcRHTrade2", dataset: "15126467", label: "연립다세대 매매", propertyType: "rh", kind: "sale", nameField: "mhouseNm", areaField: "excluUseAr", areaKind: "exclusive" },
+  "rh-rent": { service: "RTMSDataSvcRHRent", dataset: "15126473", label: "연립다세대 전월세", propertyType: "rh", kind: "rent", nameField: "mhouseNm", areaField: "excluUseAr", areaKind: "exclusive" },
+  "sh-sale": { service: "RTMSDataSvcSHTrade", dataset: "15126465", label: "단독·다가구 매매", propertyType: "sh", kind: "sale", nameField: null, areaField: "totalFloorAr", areaKind: "floor_total" },
+  "sh-rent": { service: "RTMSDataSvcSHRent", dataset: "15126472", label: "단독·다가구 전월세", propertyType: "sh", kind: "rent", nameField: null, areaField: "totalFloorAr", areaKind: "floor_total" },
+  "offi-sale": { service: "RTMSDataSvcOffiTrade", dataset: "15126464", label: "오피스텔 매매", propertyType: "offi", kind: "sale", nameField: "offiNm", areaField: "excluUseAr", areaKind: "exclusive" },
+  "offi-rent": { service: "RTMSDataSvcOffiRent", dataset: "15126475", label: "오피스텔 전월세", propertyType: "offi", kind: "rent", nameField: "offiNm", areaField: "excluUseAr", areaKind: "exclusive" },
+  "commercial-sale": { service: "RTMSDataSvcNrgTrade", dataset: "15126463", label: "상업업무용 매매", propertyType: "commercial", kind: "sale", nameField: null, areaField: "buildingAr", areaKind: "building" },
+  "land-sale": { service: "RTMSDataSvcLandTrade", dataset: "15126466", label: "토지 매매", propertyType: "land", kind: "sale", nameField: null, areaField: "dealArea", areaKind: "deal" },
+  "industrial-sale": { service: "RTMSDataSvcInduTrade", dataset: "15126470", label: "공장·창고 매매", propertyType: "industrial", kind: "sale", nameField: null, areaField: "buildingAr", areaKind: "building" },
 } as const satisfies Record<string, ServiceDef>;
 
 export type ServiceId = keyof typeof SERVICES;

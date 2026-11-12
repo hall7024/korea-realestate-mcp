@@ -111,11 +111,9 @@ export function apiErrorFrom(service: ServiceId, status: number, gatewayCode: st
 export function apiErrorOfKind(service: ServiceId, kind: ApiErrorKind, status?: number, gatewayCode?: string): ApiError {
   const def = SERVICES[service];
   const apply = `공공데이터포털(data.go.kr/data/${def.dataset}/openapi.do)에서 '${def.label}' 활용신청을 하세요. 자동승인이며 반영까지 최대 1시간 걸릴 수 있습니다.`;
-  // 실측하지 않은 서비스는 경로가 틀려도 30이 온다
-  const unverified = def.verified ? "" : " 신청 후 1시간이 지나도 계속되면 이 패키지의 서비스 경로 문제일 수 있으니 이슈로 알려 주세요.";
   const messages: Record<ApiErrorKind, [string, string]> = {
-    key_or_subscription: [`${def.label} 조회가 거부됐습니다 (등록되지 않은 서비스키).`, `${KEY_ENV} 값이 맞는지 확인하거나, ${apply}${unverified}`],
-    not_subscribed: [`${def.label} 서비스에 활용신청이 안 된 키입니다.`, apply + unverified],
+    key_or_subscription: [`${def.label} 조회가 거부됐습니다 (등록되지 않은 서비스키).`, `${KEY_ENV} 값이 맞는지 확인하거나, ${apply}`],
+    not_subscribed: [`${def.label} 서비스에 활용신청이 안 된 키입니다.`, apply],
     no_key: ["인증키가 전달되지 않았습니다.", `환경변수 ${KEY_ENV}에 공공데이터포털 일반 인증키를 넣어 주세요.`],
     access_denied: [`${def.label} 서비스 접근이 거부됐습니다.`, "공공데이터포털 마이페이지에서 활용 상태(승인·이용 정지)를 확인하세요."],
     ip_not_allowed: ["허용되지 않은 IP에서 호출했습니다.", "공공데이터포털에서 키의 IP 제한 설정을 확인하세요."],

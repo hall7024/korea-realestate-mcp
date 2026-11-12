@@ -126,10 +126,6 @@ describe("apiErrorFrom", () => {
     expect(apiErrorFrom("apt-sale", 200, "__proto__").kind).toBe("upstream");
   });
 
-  it("미검증 서비스의 30은 경로 문제 가능성도 알린다", () => {
-    expect(apiErrorFrom("land-sale", 403, "30").hint).toContain("서비스 경로");
-    expect(apiErrorFrom("apt-sale", 403, "30").hint).not.toContain("서비스 경로");
-  });
 
   it("코드가 없으면 HTTP 상태로", () => {
     expect(apiErrorFrom("apt-sale", 429, undefined).kind).toBe("rate_limit");

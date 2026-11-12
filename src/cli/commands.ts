@@ -110,9 +110,9 @@ async function doctor(client: Client, out: (s: string) => void): Promise<number>
     const r = results.get(id);
     const def = SERVICES[id];
     const status = !r ? "-" : r.ok ? "정상" : (DOCTOR_STATUS[r.kind] ?? r.kind);
-    return [def.label, id, def.dataset, status, def.verified ? "" : "응답 형식 미검증"];
+    return [def.label, id, def.dataset, status];
   });
-  out(`${table(["서비스", "id", "데이터셋", "상태", "비고"], rows)}\n`);
+  out(`${table(["서비스", "id", "데이터셋", "상태"], rows)}\n`);
   const failed = [...results.values()].filter((r) => !r.ok);
   if (failed.length) {
     out(`\n활용신청: https://www.data.go.kr/data/<데이터셋>/openapi.do 에서 신청하세요 (자동승인, 반영까지 최대 1시간).\n`);

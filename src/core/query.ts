@@ -85,8 +85,6 @@ export interface SearchArgs {
 export interface SearchResult extends Fetched {
   kind: "deals";
   service: ServiceId;
-  /** 응답 필드를 실측으로 확인한 서비스인가 */
-  verified: boolean;
   /** 조건에 맞는 전체 건수 */
   total: number;
   /** 최신순 limit건 */
@@ -169,7 +167,6 @@ export async function searchDeals(ctx: QueryContext, args: SearchArgs): Promise<
     region: picked.region,
     ...(picked.note ? { note: picked.note } : {}),
     service,
-    verified: SERVICES[service].verified,
     months: [...months].sort(),
     total: kept.length,
     deals: [...kept].sort((a, b) => b.date.localeCompare(a.date)).slice(0, limit),

@@ -324,6 +324,166 @@
    "returnReasonCode": null,
    "returnAuthMsg": null,
    "errMsg": null
+  },
+  "RTMSDataSvcAptTradeDev.xml": {
+   "service": "RTMSDataSvcAptTradeDev",
+   "path": null,
+   "params": {
+    "LAWD_CD": "36110",
+    "DEAL_YMD": "202610",
+    "pageNo": 1,
+    "numOfRows": 10
+   },
+   "keyMode": null,
+   "status": 200,
+   "contentType": "application/xml;charset=utf-8",
+   "resultCode": "000",
+   "totalCount": "676",
+   "items": 10,
+   "returnReasonCode": null,
+   "returnAuthMsg": null,
+   "errMsg": null,
+   "fetchedAt": "2026-11-12"
+  },
+  "RTMSDataSvcSilvTrade.xml": {
+   "service": "RTMSDataSvcSilvTrade",
+   "path": null,
+   "params": {
+    "LAWD_CD": "36110",
+    "DEAL_YMD": "202610",
+    "pageNo": 1,
+    "numOfRows": 10
+   },
+   "keyMode": null,
+   "status": 200,
+   "contentType": "application/xml;charset=utf-8",
+   "resultCode": "000",
+   "totalCount": "2",
+   "items": 2,
+   "returnReasonCode": null,
+   "returnAuthMsg": null,
+   "errMsg": null,
+   "fetchedAt": "2026-11-12"
+  },
+  "RTMSDataSvcSHTrade.xml": {
+   "service": "RTMSDataSvcSHTrade",
+   "path": null,
+   "params": {
+    "LAWD_CD": "36110",
+    "DEAL_YMD": "202610",
+    "pageNo": 1,
+    "numOfRows": 10
+   },
+   "keyMode": null,
+   "status": 200,
+   "contentType": "application/xml;charset=utf-8",
+   "resultCode": "000",
+   "totalCount": "4",
+   "items": 4,
+   "returnReasonCode": null,
+   "returnAuthMsg": null,
+   "errMsg": null,
+   "fetchedAt": "2026-11-12"
+  },
+  "RTMSDataSvcSHRent.xml": {
+   "service": "RTMSDataSvcSHRent",
+   "path": null,
+   "params": {
+    "LAWD_CD": "36110",
+    "DEAL_YMD": "202610",
+    "pageNo": 1,
+    "numOfRows": 10
+   },
+   "keyMode": null,
+   "status": 200,
+   "contentType": "application/xml;charset=utf-8",
+   "resultCode": "000",
+   "totalCount": "149",
+   "items": 10,
+   "returnReasonCode": null,
+   "returnAuthMsg": null,
+   "errMsg": null,
+   "fetchedAt": "2026-11-12"
+  },
+  "RTMSDataSvcOffiRent.xml": {
+   "service": "RTMSDataSvcOffiRent",
+   "path": null,
+   "params": {
+    "LAWD_CD": "36110",
+    "DEAL_YMD": "202610",
+    "pageNo": 1,
+    "numOfRows": 10
+   },
+   "keyMode": null,
+   "status": 200,
+   "contentType": "application/xml;charset=utf-8",
+   "resultCode": "000",
+   "totalCount": "81",
+   "items": 10,
+   "returnReasonCode": null,
+   "returnAuthMsg": null,
+   "errMsg": null,
+   "fetchedAt": "2026-11-12"
+  },
+  "RTMSDataSvcNrgTrade.xml": {
+   "service": "RTMSDataSvcNrgTrade",
+   "path": null,
+   "params": {
+    "LAWD_CD": "36110",
+    "DEAL_YMD": "202610",
+    "pageNo": 1,
+    "numOfRows": 10
+   },
+   "keyMode": null,
+   "status": 200,
+   "contentType": "application/xml;charset=utf-8",
+   "resultCode": "000",
+   "totalCount": "18",
+   "items": 10,
+   "returnReasonCode": null,
+   "returnAuthMsg": null,
+   "errMsg": null,
+   "fetchedAt": "2026-11-12"
+  },
+  "RTMSDataSvcLandTrade.xml": {
+   "service": "RTMSDataSvcLandTrade",
+   "path": null,
+   "params": {
+    "LAWD_CD": "36110",
+    "DEAL_YMD": "202610",
+    "pageNo": 1,
+    "numOfRows": 10
+   },
+   "keyMode": null,
+   "status": 200,
+   "contentType": "application/xml;charset=utf-8",
+   "resultCode": "000",
+   "totalCount": "166",
+   "items": 10,
+   "returnReasonCode": null,
+   "returnAuthMsg": null,
+   "errMsg": null,
+   "fetchedAt": "2026-11-12"
+  },
+  "RTMSDataSvcInduTrade.xml": {
+   "service": "RTMSDataSvcInduTrade",
+   "path": null,
+   "params": {
+    "LAWD_CD": "36110",
+    "DEAL_YMD": "202610",
+    "pageNo": 1,
+    "numOfRows": 10
+   },
+   "keyMode": null,
+   "status": 200,
+   "contentType": "application/xml;charset=utf-8",
+   "resultCode": "000",
+   "totalCount": "2",
+   "items": 2,
+   "returnReasonCode": null,
+   "returnAuthMsg": null,
+   "errMsg": null,
+   "fetchedAt": "2026-11-12"
   }
  },
  "experiments": {

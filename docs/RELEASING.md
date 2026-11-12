@@ -36,4 +36,3 @@ npm은 패키지가 먼저 있어야 trusted publisher를 등록할 수 있다(�
 
 - [ ] `npx -y korea-realestate-mcp@0.1 doctor`로 동작을 확인한다
 - [ ] MCP 레지스트리에 등록한다: `mcp-publisher login github`, 이어서 `mcp-publisher publish`. `server.json`과 package.json의 버전, `mcpName`이 맞아야 한다
-- [ ] 공공데이터포털에서 미신청 8종을 활용신청하고, 그 서비스들의 실측 fixture를 채워 `verified`를 갱신한다
