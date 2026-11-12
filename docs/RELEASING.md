@@ -22,15 +22,10 @@
 - [ ] Releases: immutable releases 켜기
 - [ ] 첫 CI 실행 결과 확인. semgrep(pipx) 단계가 정상으로 도는지 본다
 
-## 첫 npm 배포 (0.1.0)
+## npm 배포
 
-npm은 패키지가 먼저 있어야 trusted publisher를 등록할 수 있다(확인 필요). 그래서 첫 배포만 단기 토큰을 쓴다.
-
-1. 짧은 기간짜리 granular 토큰을 만들어 `release` 환경의 secret `NPM_TOKEN`으로 넣는다.
-2. `v0.1.0` 태그를 push하면 release.yml이 `npm publish --provenance --access public`으로 배포한다.
-3. npm 패키지 설정에서 trusted publisher를 등록한다(저장소 hall7024/korea-realestate-mcp, workflow release.yml, environment release).
-4. "Require 2FA and disallow tokens"를 켠다.
-5. 토큰을 폐기하고 secret을 지운다. 이후 배포는 OIDC로만 한다.
+- 0.1.0만 단기 토큰으로 CI에서 배포했다(2026-11-13). 그 뒤 trusted publisher(hall7024/korea-realestate-mcp, release.yml, environment release)를 등록하고, 토큰 게시를 막고, 토큰을 폐기했다.
+- 이후 버전: package.json·server.json·CHANGELOG 버전을 올리고 커밋한 뒤 `v<버전>` 태그를 push한다. release.yml이 OIDC로 배포한다.
 
 ## 배포 후
 
