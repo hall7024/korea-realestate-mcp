@@ -24,13 +24,13 @@
 
 ## 첫 npm 배포 (0.1.0)
 
-npm은 패키지가 먼저 있어야 trusted publisher를 등록할 수 있다(확인 필요). 둘 중 하나를 고른다.
+npm은 패키지가 먼저 있어야 trusted publisher를 등록할 수 있다(확인 필요). 그래서 첫 배포만 단기 토큰을 쓴다.
 
-- (a) 권장: 짧은 기간짜리 granular 토큰을 `release` 환경의 secret `NPM_TOKEN`으로 넣는다. release.yml에서 `npm publish --provenance --access public`으로 배포한다. 배포한 뒤 다음을 순서대로 한다.
-  1. npm 패키지 설정에서 trusted publisher를 등록한다(저장소 hall7024/korea-realestate-mcp, workflow release.yml, environment release).
-  2. "Require 2FA and disallow tokens"를 켠다.
-  3. 토큰을 폐기하고 secret을 지운다.
-- (b) 로컬에서 `npm publish --access public`으로 수동 배포한다. 이 경우 0.1.0에는 provenance가 없다. README와 SECURITY의 문구를 "0.1.1부터"로 고친다.
+1. 짧은 기간짜리 granular 토큰을 만들어 `release` 환경의 secret `NPM_TOKEN`으로 넣는다.
+2. `v0.1.0` 태그를 push하면 release.yml이 `npm publish --provenance --access public`으로 배포한다.
+3. npm 패키지 설정에서 trusted publisher를 등록한다(저장소 hall7024/korea-realestate-mcp, workflow release.yml, environment release).
+4. "Require 2FA and disallow tokens"를 켠다.
+5. 토큰을 폐기하고 secret을 지운다. 이후 배포는 OIDC로만 한다.
 
 ## 배포 후
 
