@@ -1,2 +1,5 @@
 # 새로 올라온 지 하루가 안 된 버전은 설치하지 않는다 (공급망 공격 대비)
 minimumReleaseAge: 1440
+# eslint가 끌어오는 minimatch 10.x의 DoS 취약점(GHSA, < 11.0.1). 개발 의존성만 해당
+overrides:
+  "minimatch@>=7 <11.0.1": 11.0.5
