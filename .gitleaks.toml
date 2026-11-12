@@ -15,3 +15,8 @@ regex = '''DATA_GO_KR_SERVICE_KEY\s*[=:]\s*["']?[A-Za-z0-9%+/=]{20,}'''
 id = "molit-api-key-env"
 description = "MOLIT_API_KEY 값"
 regex = '''MOLIT_API_KEY\s*[=:]\s*["']?[A-Za-z0-9%+/=]{20,}'''
+
+# test/helpers.ts의 가짜 키
+[allowlist]
+description = "테스트용 가짜 키"
+regexes = ['''testKEY1234''']
