@@ -20,6 +20,7 @@ describe("format", () => {
 
   it("표는 | 를 이스케이프한다", () => {
     expect(table(["a", "b"], [["x|y", 1]])).toBe("| a | b |\n|---|---|\n| x\\|y | 1 |");
+    expect(table(["a"], [["x\\|y"]])).toBe("| a |\n|---|\n| x\\\\\\|y |");
   });
 
   it("출처 줄", () => {

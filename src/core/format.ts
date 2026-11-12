@@ -14,7 +14,7 @@ export const sqm = (x: number) => `${Number(x.toFixed(2))}㎡`;
 
 /** Markdown 표 (모델이 읽기 쉬운 압축 형식) */
 export function table(headers: string[], rows: (string | number)[][]): string {
-  const esc = (v: string | number) => String(v).replace(/\|/g, "\\|");
+  const esc = (v: string | number) => String(v).replace(/[\\|]/g, "\\$&");
   return [`| ${headers.map(esc).join(" | ")} |`, `|${headers.map(() => "---").join("|")}|`, ...rows.map((r) => `| ${r.map(esc).join(" | ")} |`)].join("\n");
 }
 
